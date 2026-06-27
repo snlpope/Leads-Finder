@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Business Leads</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="logo">🎯 Lead Scalper</div>
+        <div class="nav active">Leads</div>
+        <div class="nav">Activity</div>
+        <div class="nav">Projects</div>
+        <div class="status-box">Scraper Status<br><span>● Idle</span></div>
+    </aside>
+
+    <main class="main">
+        <div class="page-top">
+            <div>
+                <h1>Business Leads</h1>
+                <p>Businesses discovered from Yelp and saved for outreach.</p>
+            </div>
+            <div class="topbar">
+                <form method="post" action="/run-scraper">
+                    <button type="submit" class="primary">
+                        ▷ Run Scraper
+                    </button>
+                </form>
+                <button>Refresh</button>
+            </div>
+        </div>
+
+        <section class="header">
+            <div class="stats">
+
+                <div class="stat total">
+                    <span>Total Leads</span>
+
+                    <strong>{{ stats["total"] }}</strong>
+
+                    <small>
+                        {{ page }} page{{ "" if page == 1 else "s" }}
+                    </small>
+
+                    <svg class="sparkline" viewBox="0 0 120 30">
+                        <polyline points="0,26 18,24 36,20 54,18 72,12 90,8 108,10 120,5"/>
+                    </svg>
+
+                </div>
+
+
+                <div class="stat email">
+
+                    <span>With Email</span>
+
+                    <strong>{{ stats["email"] }}</strong>
+
+                    <small>
+                        {{ ((stats["email"] / stats["total"] * 100) if stats["total"] else 0)|round(1) }}% of total
+                    </small>
+
+                    <svg class="sparkline" viewBox="0 0 120 30">
+                        <polyline points="0,28 18,28 36,24 54,20 72,17 90,10 108,8 120,5"/>
+                    </svg>
+
+                </div>
+
+
+                <div class="stat website">
+
+                    <span>With Website</span>
+
+                    <strong>{{ stats["website"] }}</strong>
+
+                    <small>
+                        {{ ((stats["website"] / stats["total"] * 100) if stats["total"] else 0)|round(1) }}% of total
+                    </small>
+
+                    <svg class="sparkline" viewBox="0 0 120 30">
+                        <polyline points="0,28 18,27 36,26 54,22 72,16 90,11 108,7 120,6"/>
+                    </svg>
+
+                </div>
+
+
+                <div class="stat contacted">
+
+                    <span>Contacted</span>
+
+                    <strong>{{ stats["contacted"] }}</strong>
+
+                    <small>
+                        {{ ((stats["contacted"] / stats["total"] * 100) if stats["total"] else 0)|round(1) }}% of total
+                    </small>
+
+                    <svg class="sparkline" viewBox="0 0 120 30">
+                        <polyline points="0,27 18,26 36,24 54,21 72,17 90,11 108,9 120,7"/>
+                    </svg>
+
+                </div>
+
+            </div>
+        </section>
+
+        <form method="get" action="/leads" class="search-form">
+            <input type="hidden" name="status" value="{{ current_status }}">
+
+            <input 
+                type="text" 
+                name="search" 
+                placeholder="Search businesses..."
+                value="{{ search }}"
+                class="search-input"
+            >
+
+            <button type="submit" class="search-button">Search</button>
+        </form>
+        
+        <div class="filter-tabs">
+
+            <a href="/leads?status=all"
+            class="filter-pill all {% if current_status == 'all' %}active{% endif %}">
+                All
+                <span>{{ total_count }}</span>
+            </a>
+
+            <a href="/leads?status=not_done"
+            class="filter-pill not_done {% if current_status == 'not_done' %}active{% endif %}">
+                Not Done
+                <span>{{ not_done_count }}</span>
+            </a>
+
+            <a href="/leads?status=emailed"
+            class="filter-pill emailed {% if current_status == 'emailed' %}active{% endif %}">
+                Emailed
+                <span>{{ emailed_count }}</span>
+            </a>
+
+            <a href="/leads?status=no_good"
+            class="filter-pill no_good {% if current_status == 'no_good' %}active{% endif %}">
+                No Good
+                <span>{{ no_good_count }}</span>
+            </a>
+
+        </div>
+
+        <section class="leads">
+            {% for business in businesses %}
+            <div class="business-card">
+
+                <div class="card-section card-main">
+                    <div class="business-icon {{ business[9] }}">
+                        {{ business[2].split()[0][0].upper() }}{{ business[2].split()[1][0].upper() if business[2].split()|length > 1 else "" }}
+                    </div>
+
+                    <div>
+                        <h3>{{ business[2] }}</h3>
+                        <p>{{ business[7] }} • {{ business[8] }}</p>
+                        <p class="found-date">
+                            {{ business[10] | days_ago }}
+                        </p>
+                    </div>
+
+                    
+                </div>
+
+                <div class="card-section card-contact">
+                    <p><i data-lucide="phone"></i> {{ business[3] or "—" }}</p>
+                    <p><i data-lucide="mail"></i> {{ business[6] or "—" }}</p>
+
+                    <p>
+                        <i data-lucide="globe"></i>
+                        {% if business[5] %}
+                            <a href="{{ business[5] }}" target="_blank">Website</a>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="card-section card-yelp">
+                    {% if business[4] %}
+                        <a href="{{ business[4] }}" target="_blank" class="yelp-button">
+                            <i data-lucide="external-link"></i>
+                            View on Yelp
+                        </a>
+                    {% else %}
+                        <span>—</span>
+                    {% endif %}
+                </div>
+
+                <div class="card-section card-status">
+                    <form method="post" action="/leads/{{ business[0] }}/status/">
+                        <div class="status-wrapper {{ business[9] }}">
+                            <span class="status-dot"></span>
+
+                            <select name="status"
+                                    onchange="this.form.submit()"
+                                    class="status-dropdown {{ business[9] }}">
+                                <option value="not_done" {% if business[9] == "not_done" %}selected{% endif %}>New</option>
+                                <option value="emailed" {% if business[9] == "emailed" %}selected{% endif %}>Emailed</option>
+                                <option value="no_good" {% if business[9] == "no_good" %}selected{% endif %}>No Good</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+            {% endfor %}
+        </section>
+
+        <div class="pagination">
+                {% if page > 1 %}
+                    <a href="/leads?status={{ current_status }}&search={{ search }}&page={{ page - 1 }}">
+                        Previous
+                    </a>
+                {% endif %}
+
+                <span>Page {{ page }}</span>
+
+                {% if businesses|length == 10 %}
+                    <a href="/leads?status={{ current_status }}&search={{ search }}&page={{ page + 1 }}">
+                        Next
+                    </a>
+                {% endif %}
+            </div>
+    </main>
+</div>
+
+<script>
+    lucide.createIcons();
+</script>
+
+</body>
+</html>
