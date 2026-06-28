@@ -28,6 +28,15 @@ def setup_database():
     )
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS searches (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category TEXT NOT NULL,
+        city TEXT NOT NULL,
+        UNIQUE(category, city)
+        )      
+    """)
+
     conn.commit()
     conn.close()
 
@@ -192,3 +201,35 @@ def get_dashboard_stats():
         "website": with_website,
         "contacted": contacted
     }
+
+
+def searches_already_done(category,city):
+    conn = connect()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT 1 
+        FROM searches
+        WHERE category = ? AND city = ?          
+    """, (category, city))
+
+    exists = cursor.fetchone() is not None 
+
+    conn.close()
+    return exists
+
+
+def save_search(category, city):
+    conn = connect()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT OR IGNORE INTO searches (
+                   category, 
+                   city
+        )
+        VALUES (?,?)
+    """, (category, city))
+
+    conn.commit()
+    conn.close()

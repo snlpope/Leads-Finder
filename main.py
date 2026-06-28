@@ -1,4 +1,4 @@
-from database import setup_database, save_activity, show_businesses, update_businesses
+from database import setup_database, save_activity, show_businesses, update_businesses, searches_already_done, save_search
 from datetime import date
 
 
@@ -145,16 +145,13 @@ def days_ago(created_at):
 def run_scraper():
     setup_database()
 
-    print("ran")
-
-    run_search(
-        term = "landscaping",
-        city = "Modesto, CA"
-    )
-
-
-
-
+    for category in terms:
+        for city in cities:
+            if searches_already_done(category, city):
+                continue
+            else:
+                run_search(category, city)
+                save_search(category, city)
 
 
 if __name__ == "__main__":
