@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
-from main import days_ago, run_scraper
+from lead_finder import days_ago, run_scraper
 from database import show_businesses, update_businesses_status, get_business_count, get_dashboard_stats
 
 import database

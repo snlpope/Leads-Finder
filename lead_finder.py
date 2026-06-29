@@ -193,7 +193,6 @@ def run_scraper():
             else:
                 run_search(category, city)
                 save_search(category, city)
-    print("ran")
 
 
 if __name__ == "__main__":
