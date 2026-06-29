@@ -1,5 +1,7 @@
 from database import setup_database, save_activity, show_businesses, update_businesses, searches_already_done, save_search
 from datetime import date
+import os
+import requests
 
 
 terms = ["landscaping", "junk removal", "roofing", "plumbing"]
@@ -100,6 +102,45 @@ def fake_yelp_search(term, city):
     ]
 
 
+YELP_API_KEY = os.getenv("YELP_API_KEY")
+
+def fetch_yelp_businesses(term, city, limit=20):
+    url = "https://api.yelp.com/v3/businesses/search"
+
+    headers = {
+        "Authorization": f"Bearer {YELP_API_KEY}"
+    }
+
+    params = {
+        "term": term,
+        "location": city,
+        "limit": limit
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    response.raise_for_status()
+
+    data = response.json()
+
+    businesses = []
+
+    for item in data.get("businesses", []):
+        business = {
+            "yelp_id": item.get("id"),
+            "name": item.get("name"),
+            "phone": item.get("display_phone"),
+            "yelp_url": item.get("url"),
+            "website": None,
+            "email": None,
+            "category": term,
+            "city": city,
+        }
+
+        businesses.append(business)
+
+    return businesses
+
+
 def run_auto_search():
     #searching by city and term instead of input
     for city in cities:
@@ -152,6 +193,7 @@ def run_scraper():
             else:
                 run_search(category, city)
                 save_search(category, city)
+    print("ran")
 
 
 if __name__ == "__main__":

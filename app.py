@@ -54,7 +54,7 @@ def change_status(business_id: int, status: str = Form(...)):
 
 @app.post("/run-scraper")
 def run_scraper_route():
-
+    print("RAN BUTTON CLICKED")
     run_scraper()   
 
     return RedirectResponse("/leads", status_code=303)
